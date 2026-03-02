@@ -1,8 +1,8 @@
-# 校招通 · JobTrack AI
+# 投了吗 · TouLeMa
 
 > 求职版 Power BI — 多平台投递看板 × AI 情报引擎 × 面经质量评分体系
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/jobtrack-ai)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/tou-le-ma)
 
 ## 功能
 
@@ -48,7 +48,7 @@ docker-compose up
 
 **Frontend:** React + Vite + Tailwind CSS + dnd-kit  
 **Backend:** Python FastAPI + Celery + PostgreSQL  
-**AI:** Claude (Haiku 评分 / Sonnet 合成) + BGE-M3 嵌入 + ChromaDB  
+**AI:** MiniMax-Text-01 (评分) + Claude Sonnet 4.6 (合成) + BGE-M3 嵌入 + ChromaDB
 **Search:** Tavily API  
 **Deploy:** Vercel (前端) + Railway (后端)
 

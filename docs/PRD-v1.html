@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD · 校招通 — 投递追踪 × AI简历匹配</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --ink-muted: #4a4a6a;
+    --ink-faint: #8a8aaa;
+    --paper: #fdfcf8;
+    --paper-warm: #f5f3ee;
+    --accent: #c0392b;
+    --accent-soft: #f9e5e3;
+    --blue: #1e3a6e;
+    --blue-soft: #e8edf5;
+    --gold: #c8a951;
+    --border: #ddd9d0;
+    --tag-bg: #eeeae2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.8;
+    font-size: 14px;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    background: var(--ink);
+    color: #fff;
+    padding: 80px 60px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 40px;
+    width: 200px; height: 200px;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .cover-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cover h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+  .cover h1 span {
+    color: var(--gold);
+  }
+  .cover-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 48px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 48px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 24px;
+  }
+  .cover-meta-item label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.35);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .cover-meta-item span {
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+  }
+
+  /* ── Layout ── */
+  .doc {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 48px;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 28px 32px;
+    margin-bottom: 56px;
+    border-radius: 2px;
+  }
+  .toc h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 16px;
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+    columns: 2;
+    column-gap: 32px;
+  }
+  .toc li {
+    counter-increment: toc;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 3px 0;
+    color: var(--ink-muted);
+    font-size: 13px;
+  }
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 52px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 3px 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  h3 {
+    font-family: 'Noto Sans SC', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--blue);
+    margin: 24px 0 10px;
+  }
+
+  p {
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── Cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .card {
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 2px;
+  }
+  .card-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .card h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .card p {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* ── Pain points ── */
+  .pain-list {
+    list-style: none;
+  }
+  .pain-list li {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .pain-list li:last-child { border-bottom: none; }
+  .pain-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    min-width: 24px;
+    margin-top: 2px;
+  }
+  .pain-text strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .pain-text span {
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  /* ── Feature Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0;
+  }
+  th {
+    background: var(--ink);
+    color: #fff;
+    font-weight: 500;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-muted);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  tr:hover td { background: var(--paper-warm); }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── Priority Tags ── */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .tag-p0 { background: #fde8e8; color: #c0392b; }
+  .tag-p1 { background: #fff3cd; color: #a0730c; }
+  .tag-p2 { background: #e8edf5; color: #1e3a6e; }
+  .tag-p3 { background: var(--tag-bg); color: var(--ink-faint); }
+
+  /* ── User Stories ── */
+  .story {
+    background: var(--blue-soft);
+    border-left: 3px solid var(--blue);
+    padding: 16px 20px;
+    margin: 12px 0;
+    border-radius: 0 2px 2px 0;
+  }
+  .story-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--blue);
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .story p {
+    font-size: 13px;
+    color: var(--ink);
+    margin: 0;
+  }
+  .story .ac {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--ink-muted);
+  }
+  .story .ac strong { color: var(--ink); }
+
+  /* ── Metrics ── */
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .metric-card {
+    border: 1px solid var(--border);
+    padding: 20px;
+    text-align: center;
+    background: var(--paper-warm);
+  }
+  .metric-val {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+  .metric-label {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+  .metric-phase {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+
+  /* ── Roadmap ── */
+  .roadmap {
+    position: relative;
+    padding-left: 32px;
+  }
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 8px; top: 8px; bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+  .roadmap-item {
+    position: relative;
+    margin-bottom: 28px;
+  }
+  .roadmap-item::before {
+    content: '';
+    position: absolute;
+    left: -28px;
+    top: 6px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .roadmap-phase {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .roadmap-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .roadmap-features {
+    list-style: none;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .roadmap-features li::before {
+    content: '─ ';
+    color: var(--border);
+  }
+
+  /* ── Competitor ── */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .comp-card {
+    border: 1px solid var(--border);
+    padding: 16px;
+  }
+  .comp-name {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .comp-pros, .comp-cons {
+    font-size: 12px;
+    color: var(--ink-faint);
+    line-height: 1.6;
+  }
+  .comp-gap {
+    background: var(--accent-soft);
+    border: 1px solid #f5c6c0;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 16px;
+    border-radius: 2px;
+  }
+
+  /* ── Callout ── */
+  .callout {
+    background: var(--paper-warm);
+    border: 1px solid var(--gold);
+    border-left-width: 3px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--ink-muted);
+    border-radius: 0 2px 2px 0;
+  }
+  .callout strong { color: var(--ink); }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--tag-bg);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--ink);
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    background: var(--paper-warm);
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+
+<!-- Cover -->
+<div class="cover">
+  <div class="cover-label">Product Requirements Document · v1.0</div>
+  <h1>校招通<span>·</span></h1>
+  <div class="cover-sub">投递追踪 × AI简历匹配 — 为春秋招而生的求职管理工具</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item"><label>作者</label><span>刘子安</span></div>
+    <div class="cover-meta-item"><label>版本</label><span>V1.0 Draft</span></div>
+    <div class="cover-meta-item"><label>日期</label><span>2026-03</span></div>
+    <div class="cover-meta-item"><label>状态</label><span>待评审</span></div>
+    <div class="cover-meta-item"><label>目标平台</label><span>Web（移动端响应式）</span></div>
+  </div>
+</div>
+
+<div class="doc">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>目录</h3>
+    <ol>
+      <li>产品背景与目标</li>
+      <li>目标用户</li>
+      <li>用户痛点</li>
+      <li>产品定位与差异化</li>
+      <li>竞品分析</li>
+      <li>核心功能 — 投递看板</li>
+      <li>核心功能 — AI简历匹配</li>
+      <li>用户故事</li>
+      <li>非功能需求</li>
+      <li>成功指标</li>
+      <li>产品路线图</li>
+      <li>技术架构概要</li>
+    </ol>
+  </div>
+
+  <!-- 01 背景 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>产品背景与目标</h2>
+    </div>
+    <p>每年春秋两季，中国高校有超过 <strong>1,000 万</strong>应届毕业生同步进入求职市场。校招周期短（春招通常集中在 3–5 月，秋招集中在 9–11 月），岗位信息分散于牛客、Boss直聘、公司官网等多个平台，大量同学依赖飞书/Excel 表格手动记录投递进度，既低效又易遗漏，且无法获得针对具体岗位的个性化简历反馈。</p>
+    <p><strong>校招通</strong>旨在成为求职学生的"作战指挥台"：以可视化看板统一管理多平台投递进度，并通过 AI 能力将简历与目标 JD 进行深度匹配，输出可操作的优化建议，帮助学生用同一份简历的最优呈现形式在短时间内获得更多面试机会。</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h4>核心目标</h4>
+        <p>减少求职过程中的信息焦虑，让学生把精力集中在准备而非记录上</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h4>AI 差异化</h4>
+        <p>JD 语义解析 × 简历评分，精准识别关键词缺口，给出可执行修改建议</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h4>零成本上手</h4>
+        <p>无需注册，浏览器打开即用，localStorage 本地持久化，保护隐私</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h4>全设备可用</h4>
+        <p>响应式布局，手机查看进度、PC 精细操作，无缝切换</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 目标用户 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>目标用户</h2>
+    </div>
+
+    <h3>核心用户群</h3>
+    <table>
+      <tr>
+        <th>用户类型</th>
+        <th>特征描述</th>
+        <th>核心诉求</th>
+      </tr>
+      <tr>
+        <td><strong>海投型学生</strong></td>
+        <td>同时投递 30–80+ 岗位，无法记住每家进度</td>
+        <td>快速录入、状态追踪、截止日提醒</td>
+      </tr>
+      <tr>
+        <td><strong>精投型学生</strong></td>
+        <td>精选 10–20 家目标企业，每份简历针对性调整</td>
+        <td>JD 匹配分析、简历版本管理</td>
+      </tr>
+      <tr>
+        <td><strong>跨行业转型学生</strong></td>
+        <td>背景与目标岗位匹配度存疑，焦虑投递转化率</td>
+        <td>AI 给出具体缺口建议和改写示例</td>
+      </tr>
+    </table>
+
+    <h3>用户画像（Persona）</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>小陈 · 海投战士</h4>
+        <p>985 工科硕士，秋招同时投递 50+ 岗位，习惯用微信群/备忘录记录，经常忘记某家笔试时间，已错过 2 个机会。</p>
+      </div>
+      <div class="card">
+        <h4>小李 · 跨行求职者</h4>
+        <p>理工科本科转产品/运营，不确定自己的项目经历是否契合 JD，花大量时间在逐条对照 JD 修改简历。</p>
+      </div>
+      <div class="card">
+        <h4>小王 · 精投策略派</h4>
+        <p>目标明确（互联网大厂技术岗），针对不同部门维护多版简历，需要清晰记录哪家用了哪版简历。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 痛点 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>用户痛点</h2>
+    </div>
+    <ul class="pain-list">
+      <li>
+        <span class="pain-num">P1</span>
+        <div class="pain-text">
+          <strong>进度管理混乱，信息散落多处</strong>
+          <span>投递记录分布在牛客消息、Boss 聊天、邮件、飞书表格，无统一视图，常遗漏跟进</span>
+        </div>
+      </li>
+      <li>
+        <span class="pain-num">P2</span>
+        <div class="pain-text">
+          <strong>简历与 JD 的匹配度全靠感觉</strong>
+          <span>不知道自己的简历到底差在哪里，收到拒信后无从改进，陷入重复失败的循环</span>
+        </div>
+      </li>
+      <li>
+        <span class="pain-num">P3</span>
+        <div class="pain-text">
+          <strong>关键时间节点容易遗漏</strong>
+          <span>春秋招期间同时参与多家企业的笔试、面试安排，一旦遗漏即错过，心理压力极大</span>
+        </div>
+      </li>
+      <li>
+        <span class="pain-num">P4</span>
+        <div class="pain-text">
+          <strong>数据隐私顾虑</strong>
+          <span>不愿将个人求职信息上传第三方平台，担心简历泄露；现有工具多需注册绑定手机号</span>
+        </div>
+      </li>
+      <li>
+        <span class="pain-num">P5</span>
+        <div class="pain-text">
+          <strong>现有工具学习成本高，校招季用完即弃</strong>
+          <span>Notion/飞书表格配置复杂，学生没耐心设置；希望开箱即用，招完就不用了</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- 04 定位 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>产品定位与差异化</h2>
+    </div>
+    <div class="callout">
+      <strong>定位语：</strong>专为中国校招设计的"求职作战台"—— 把分散的投递记录、JD 信息、面试安排收归一处，并用 AI 帮你把简历调到最优状态。
+    </div>
+    <h3>核心差异化</h3>
+    <table>
+      <tr><th>维度</th><th>校招通</th><th>Excel/飞书表格</th><th>LinkedIn Job Tracker</th></tr>
+      <tr><td>上手成本</td><td>零注册，秒上手</td><td>需自建模板</td><td>需绑定账号</td></tr>
+      <tr><td>AI 匹配</td><td>✅ JD × 简历深度分析</td><td>❌</td><td>⚠️ 有但不针对中国校招</td></tr>
+      <tr><td>数据隐私</td><td>本地存储，不上传</td><td>云端同步</td><td>上传至 LinkedIn</td></tr>
+      <tr><td>校招适配</td><td>✅ 笔试/群面/HR面 等阶段</td><td>自定义</td><td>❌ 针对社招</td></tr>
+      <tr><td>中文支持</td><td>✅ 全中文，JD 中文解析</td><td>✅</td><td>⚠️ 机翻</td></tr>
+    </table>
+  </div>
+
+  <!-- 05 竞品 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>竞品分析</h2>
+    </div>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-name">牛客网 · 投递管理</div>
+        <div class="comp-pros">✅ 用户基数大，校招生熟悉<br>✅ 官方数据直联，进度自动同步</div>
+        <div class="comp-cons" style="margin-top:8px">❌ 仅追踪牛客平台投递<br>❌ 无 AI 简历分析<br>❌ 界面信息密度低</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-name">Huntr / Teal</div>
+        <div class="comp-pros">✅ 看板交互成熟<br>✅ AI 简历建议（英文）</div>
+        <div class="comp-cons" style="margin-top:8px">❌ 完全针对海外市场<br>❌ 不支持中文 JD 解析<br>❌ 需付费订阅</div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-name">Notion 求职模板</div>
+        <div class="comp-pros">✅ 高度灵活<br>✅ 用户可自定义</div>
+        <div class="comp-cons" style="margin-top:8px">❌ 配置成本高<br>❌ 无 AI 能力<br>❌ 移动端体验差</div>
+      </div>
+    </div>
+    <div class="comp-gap">
+      <strong>市场空白：</strong>目前市面上没有一款工具同时满足「多平台聚合追踪 + 中文 JD 语义分析 + AI 简历匹配 + 零注册本地存储」，这是本产品的核心机会区间。
+    </div>
+  </div>
+
+  <!-- 06 投递看板 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>核心功能 — 投递看板</h2>
+    </div>
+    <h3>6.1 状态流转设计</h3>
+    <p>采用 Kanban 看板，从左到右代表求职进度递进。</p>
+    <table>
+      <tr><th>泳道</th><th>含义</th><th>典型停留时间</th><th>优先级</th></tr>
+      <tr><td>待投递</td><td>已收藏但尚未提交申请</td><td>1–7 天</td><td><span class="tag tag-p0">P0</span></td></tr>
+      <tr><td>已投递</td><td>简历已提交，等待反馈</td><td>3–21 天</td><td><span class="tag tag-p0">P0</span></td></tr>
+      <tr><td>笔试/测评</td><td>已收到笔试通知</td><td>1–3 天</td><td><span class="tag tag-p0">P0</span></td></tr>
+      <tr><td>一面</td><td>业务面 / HR 初面</td><td>3–7 天</td><td><span class="tag tag-p0">P0</span></td></tr>
+      <tr><td>终面 / 复试</td><td>高阶面试</td><td>3–10 天</td><td><span class="tag tag-p0">P0</span></td></tr>
+      <tr><td>Offer</td><td>已收 Offer，决策中</td><td>—</td><td><span class="tag tag-p0">P0</span></td></tr>
+      <tr><td>已拒绝</td><td>主动放弃或收到拒信</td><td>—</td><td><span class="tag tag-p0">P0</span></td></tr>
+    </table>
+
+    <h3>6.2 岗位卡片字段</h3>
+    <table>
+      <tr><th>字段</th><th>类型</th><th>必填</th><th>说明</th></tr>
+      <tr><td>公司名称</td><td>文本</td><td>✅</td><td>显示在卡片标题</td></tr>
+      <tr><td>岗位名称</td><td>文本</td><td>✅</td><td>支持搜索筛选</td></tr>
+      <tr><td>城市</td><td>下拉</td><td>❌</td><td>北上广深杭等</td></tr>
+      <tr><td>JD 链接 / 内容</td><td>URL / 文本</td><td>❌</td><td>AI 匹配功能需要此字段</td></tr>
+      <tr><td>投递日期</td><td>日期</td><td>✅</td><td>自动填充今天</td></tr>
+      <tr><td>截止日期</td><td>日期</td><td>❌</td><td>临近时高亮提醒</td></tr>
+      <tr><td>投递渠道</td><td>下拉</td><td>❌</td><td>牛客 / Boss / 官网 / 内推 / 猎聘</td></tr>
+      <tr><td>优先级</td><td>标签</td><td>❌</td><td>⭐⭐⭐ 三级</td></tr>
+      <tr><td>备注</td><td>多行文本</td><td>❌</td><td>面试感受、联系人等</td></tr>
+    </table>
+
+    <h3>6.3 关键交互</h3>
+    <ul style="list-style:none; padding:0">
+      <li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--ink-muted)">
+        <strong style="color:var(--ink)">拖拽移动：</strong>卡片可在泳道间拖动，状态自动更新，支持触屏操作
+      </li>
+      <li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--ink-muted)">
+        <strong style="color:var(--ink)">快速搜索：</strong>全局搜索框，实时过滤公司名/岗位名
+      </li>
+      <li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--ink-muted)">
+        <strong style="color:var(--ink)">截止高亮：</strong>距截止日 ≤ 3 天的卡片自动显示橙色边框警告
+      </li>
+      <li style="padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; color:var(--ink-muted)">
+        <strong style="color:var(--ink)">数据导出：</strong>一键导出 CSV / JSON，方便迁移或备份
+      </li>
+      <li style="padding:8px 0; font-size:13px; color:var(--ink-muted)">
+        <strong style="color:var(--ink)">数据导入：</strong>粘贴 JSON 或 CSV 即可批量导入历史记录
+      </li>
+    </ul>
+  </div>
+
+  <!-- 07 AI 匹配 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>核心功能 — AI 简历匹配</h2>
+    </div>
+    <h3>7.1 功能流程</h3>
+    <table>
+      <tr><th>步骤</th><th>用户操作</th><th>系统响应</th></tr>
+      <tr><td>1</td><td>粘贴目标 JD 文本（或输入职位关键词）</td><td>NLP 解析，提取岗位要求关键词、技能、经历要求</td></tr>
+      <tr><td>2</td><td>上传简历（PDF/文本粘贴）</td><td>解析简历结构，提取技能、项目、教育信息</td></tr>
+      <tr><td>3</td><td>点击「开始匹配」</td><td>计算匹配分数，生成分析报告</td></tr>
+      <tr><td>4</td><td>查看报告</td><td>显示匹配度、缺失关键词、建议改写内容</td></tr>
+      <tr><td>5</td><td>（可选）AI 生成改写建议</td><td>针对缺失点生成可直接使用的 bullet point 草稿</td></tr>
+    </table>
+
+    <h3>7.2 匹配报告结构</h3>
+    <div class="card-grid">
+      <div class="card">
+        <h4>匹配总分</h4>
+        <p>0–100 分，分为「关键词匹配」「技能契合」「经历相关度」三个子维度</p>
+      </div>
+      <div class="card">
+        <h4>命中关键词</h4>
+        <p>绿色高亮显示简历中已覆盖的 JD 关键词，让用户直观看到优势</p>
+      </div>
+      <div class="card">
+        <h4>缺失关键词</h4>
+        <p>红色标注 JD 要求但简历未涵盖的词汇，按重要性排序</p>
+      </div>
+      <div class="card">
+        <h4>AI 优化建议</h4>
+        <p>针对缺口给出具体的 bullet point 改写示例，可一键复制</p>
+      </div>
+    </div>
+
+    <h3>7.3 AI 调用策略</h3>
+    <div class="callout">
+      <strong>V1.0 方案（MVP）：</strong>前端直接调用 Claude API（claude-haiku-4-5 模型，成本低，速度快），API Key 由用户自行输入并仅存于 localStorage，不经过任何服务器。既保护隐私，又无后端运维成本。<br><br>
+      <strong>V2.0 升级：</strong>可选接入自建后端，对 API Key 进行代理，支持免费额度 + 付费订阅模式。
+    </div>
+
+    <h3>7.4 功能边界（V1.0 不做）</h3>
+    <p>V1.0 不包含：简历在线编辑器、多版本简历对比、面试复盘 AI 辅助、求职数据统计看板。这些列入 V2.0 规划。</p>
+  </div>
+
+  <!-- 08 用户故事 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>用户故事</h2>
+    </div>
+
+    <div class="story">
+      <div class="story-label">US-01 · 投递记录</div>
+      <p>作为一名正在春招的应届生，我希望快速添加一条投递记录（公司+岗位+状态），以便在 5 秒内完成录入而不打断我的投递节奏。</p>
+      <div class="ac"><strong>验收条件：</strong>点击「+ 添加」按钮，填写公司名+岗位名后即可保存，其他字段为选填；保存后卡片立即出现在对应泳道。</div>
+    </div>
+
+    <div class="story">
+      <div class="story-label">US-02 · 进度推进</div>
+      <p>作为收到面试通知的求职者，我希望把某条投递从「已投递」拖动到「一面」，以便快速更新状态，不需要打开编辑弹窗。</p>
+      <div class="ac"><strong>验收条件：</strong>拖拽卡片到目标泳道后松手，卡片状态立即更新并持久化至 localStorage。</div>
+    </div>
+
+    <div class="story">
+      <div class="story-label">US-03 · AI 简历分析</div>
+      <p>作为正在投递 TI 技术销售岗的学生，我希望粘贴 JD 文本和我的简历后，AI 告诉我哪些关键词缺失以及如何改写对应的 bullet，以便在投递前快速调整。</p>
+      <div class="ac"><strong>验收条件：</strong>分析完成后展示匹配分数（0–100）、命中关键词列表（绿色）、缺失关键词列表（红色）、至少 3 条具体改写建议；分析耗时 ≤ 15 秒。</div>
+    </div>
+
+    <div class="story">
+      <div class="story-label">US-04 · 数据安全</div>
+      <p>作为对隐私敏感的求职者，我希望无需注册账号、数据全部存在本地，以便放心使用而不担心简历信息泄露。</p>
+      <div class="ac"><strong>验收条件：</strong>首次打开无需注册；刷新页面数据不丢失（localStorage）；不存在任何向第三方服务器发送投递数据的请求。</div>
+    </div>
+
+    <div class="story">
+      <div class="story-label">US-05 · 数据备份</div>
+      <p>作为积累了 50 条投递记录的用户，我希望能导出所有数据为 JSON/CSV 格式，以便在换设备时迁移，或在 Excel 中进一步分析。</p>
+      <div class="ac"><strong>验收条件：</strong>导出后文件包含全部字段；重新导入后数据完整还原，状态与原始一致。</div>
+    </div>
+  </div>
+
+  <!-- 09 非功能需求 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>非功能需求</h2>
+    </div>
+    <table>
+      <tr><th>类别</th><th>指标</th><th>目标值</th></tr>
+      <tr><td>性能</td><td>首屏加载时间（冷启动）</td><td>&lt; 2 秒（4G 网络）</td></tr>
+      <tr><td>性能</td><td>AI 分析响应时间</td><td>&lt; 15 秒（取决于 Claude API）</td></tr>
+      <tr><td>兼容性</td><td>浏览器支持</td><td>Chrome 90+、Safari 14+、Firefox 88+</td></tr>
+      <tr><td>可用性</td><td>移动端布局</td><td>375px 以上屏幕可完整使用核心功能</td></tr>
+      <tr><td>数据上限</td><td>localStorage 记录数</td><td>建议 ≤ 500 条（约 5MB，超出时提示导出）</td></tr>
+      <tr><td>无障碍</td><td>可访问性</td><td>表单元素有 aria-label，颜色对比度 ≥ 4.5:1</td></tr>
+      <tr><td>安全</td><td>API Key 存储</td><td>仅存于 localStorage，不出现在网络请求 URL 中</td></tr>
+      <tr><td>部署</td><td>托管平台</td><td>Vercel（免费，CDN 加速，零运维）</td></tr>
+    </table>
+  </div>
+
+  <!-- 10 成功指标 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>成功指标</h2>
+    </div>
+
+    <div class="metric-row">
+      <div class="metric-card">
+        <div class="metric-val">200</div>
+        <div class="metric-label">DAU（日活）</div>
+        <div class="metric-phase">上线 1 个月</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">1K+</div>
+        <div class="metric-label">注册/访问用户</div>
+        <div class="metric-phase">春招季结束</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val">40%</div>
+        <div class="metric-label">次日留存率</div>
+        <div class="metric-phase">目标值</div>
+      </div>
+    </div>
+
+    <h3>辅助指标</h3>
+    <table>
+      <tr><th>指标</th><th>衡量方式</th><th>目标</th></tr>
+      <tr><td>AI 功能使用率</td><td>使用 AI 匹配的用户 / 总用户</td><td>&gt; 30%</td></tr>
+      <tr><td>平均会话时长</td><td>页面打开到关闭的时间</td><td>&gt; 5 分钟</td></tr>
+      <tr><td>用户推荐意愿（NPS）</td><td>用户调研问卷（V1.0 结束后）</td><td>&gt; 40</td></tr>
+      <tr><td>GitHub Star</td><td>开源仓库 star 数</td><td>100+ （3 个月内）</td></tr>
+      <tr><td>牛客/小红书讨论量</td><td>提及产品的帖子数</td><td>5+ 条有机传播</td></tr>
+    </table>
+
+    <div class="callout">
+      <strong>简历呈现口径：</strong>独立开发并上线校招管理工具，上线首月 DAU 达 200+，核心功能 AI 简历匹配使用率超 30%，GitHub 开源获 100+ Star；全栈独立交付（前端 + AI 集成 + 部署）。
+    </div>
+  </div>
+
+  <!-- 11 路线图 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2>产品路线图</h2>
+    </div>
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-phase">PHASE 1 · 2026.03 — MVP 上线（2 周）</div>
+        <div class="roadmap-title">核心看板 + AI 匹配 MVP</div>
+        <ul class="roadmap-features">
+          <li>7 列 Kanban 看板，拖拽排序</li>
+          <li>岗位卡片增删改，localStorage 持久化</li>
+          <li>Claude API 集成，JD × 简历匹配</li>
+          <li>JSON 导入导出</li>
+          <li>Vercel 部署上线，域名绑定</li>
+        </ul>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-phase">PHASE 2 · 2026.04 — 增长优化</div>
+        <div class="roadmap-title">用户体验打磨 + 传播钩子</div>
+        <ul class="roadmap-features">
+          <li>截止日期提醒（浏览器通知）</li>
+          <li>数据统计看板（漏斗图、按公司分布）</li>
+          <li>一键分享"求职战报"图片（小红书/朋友圈传播）</li>
+          <li>牛客/Boss 直聘快捷 JD 解析（书签脚本）</li>
+        </ul>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-phase">PHASE 3 · 2026.05 — 商业化探索</div>
+        <div class="roadmap-title">账户体系 + 付费功能</div>
+        <ul class="roadmap-features">
+          <li>可选注册（微信/邮箱登录，云端备份）</li>
+          <li>AI 简历改写建议升级版（多轮对话优化）</li>
+          <li>面试题库推荐（基于 JD 关键词）</li>
+          <li>免费额度 + 付费订阅（19.9/月）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 技术架构 -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>技术架构概要</h2>
+    </div>
+    <table>
+      <tr><th>层级</th><th>技术选型</th><th>说明</th></tr>
+      <tr><td>前端框架</td><td>原生 HTML / CSS / JS（单文件）</td><td>零依赖，易于分享和部署；V2 可迁移至 React</td></tr>
+      <tr><td>数据持久化</td><td>localStorage</td><td>V1 无后端；容量 ~10MB，满足 500 条记录</td></tr>
+      <tr><td>AI 接入</td><td>Claude API（Haiku 4.5）</td><td>前端直接调用，速度快，成本约 ¥0.05/次匹配</td></tr>
+      <tr><td>部署</td><td>Vercel</td><td>免费托管，自动 HTTPS，CDN 全球加速</td></tr>
+      <tr><td>版本控制</td><td>GitHub（公开仓库）</td><td>开源增加可信度，吸引 Star，利于简历呈现</td></tr>
+      <tr><td>域名</td><td>自购 .cn 域名（约 ¥30/年）</td><td>如 <code>zhaopin-tong.cn</code>，提升专业感</td></tr>
+    </table>
+
+    <h3>V1.0 不需要后端的理由</h3>
+    <p>所有数据存本地 → 无需数据库；Claude API Key 用户自填 → 无需代理服务器；静态网页托管 Vercel → 零运维。整体上线成本 <strong>< 1 天开发 + ¥30 域名</strong>，适合个人 Vibe Coding 快速交付。</p>
+  </div>
+
+</div><!-- /doc -->
+
+<div class="footer">
+  校招通 PRD v1.0 · 刘子安 · 2026-03 · 仅供内部评审使用
+</div>
+
+</body>
+</html>
