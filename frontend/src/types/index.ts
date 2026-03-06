@@ -32,5 +32,5 @@ export const COLUMNS: { status: JobStatus; color: string }[] = [
   { status: '已拒绝', color: '#EF4444' },
 ]
 
-export const CHANNELS = ['牛客', 'Boss直聘', '官网', '内推', '猎聘', '其他']
+export const CHANNELS = ['Boss直聘', '牛客', '内推', '校招官网', '领英', '猎聘', '实习僧', '其他']
 export const CITIES   = ['北京', '上海', '深圳', '广州', '杭州', '成都', '其他']

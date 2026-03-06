@@ -4,18 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg:      '#0B0F1A',
-        surface: '#111827',
-        card:    '#161D2E',
-        border:  '#1E2A40',
-        amber:   '#F0B429',
-        blue:    '#4F8EF7',
-        green:   '#10B981',
-        red:     '#EF4444',
-        muted:   '#5A6A8A',
+        bg:      '#F5F5F7',
+        surface: '#FFFFFF',
+        card:    '#FFFFFF',
+        border:  '#D2D2D7',
+        amber:   '#FF9F0A',
+        blue:    '#0071E3',
+        green:   '#1D9E5F',
+        red:     '#D93025',
+        muted:   '#86868B',
+        'muted-2': '#AEAEB2',
       },
       fontFamily: {
+        sans: ['Plus Jakarta Sans', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+      },
+      borderRadius: {
+        'xl2': '14px',
+        'xl3': '18px',
       },
     },
   },

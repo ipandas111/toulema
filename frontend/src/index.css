@@ -1,13 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #0B0F1A;
-  color: #E2E8F8;
-  font-family: 'DM Sans', sans-serif;
+html, body {
+  background-color: #F5F5F7;
+  color: #1D1D1F;
+  font-family: 'Plus Jakarta Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+.board-scroll::-webkit-scrollbar { height: 3px; }
+.board-scroll::-webkit-scrollbar-track { background: transparent; }
+.board-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 2px; }
+
+/* Card */
+.job-card {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+}
+
+/* Modal */
+.modal-backdrop { animation: fadeIn 120ms ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-panel { animation: slideUp 220ms cubic-bezier(0.34, 1.4, 0.64, 1); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Focus ring */
+.input-field:focus {
+  outline: none;
+  border-color: rgba(255, 159, 10, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 159, 10, 0.12);
+}

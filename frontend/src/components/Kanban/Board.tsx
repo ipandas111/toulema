@@ -1,8 +1,9 @@
 import {
-  DndContext, DragEndEvent, DragOverlay, DragStartEvent,
+  DndContext, DragOverlay,
   PointerSensor, useSensor, useSensors, closestCorners,
 } from '@dnd-kit/core'
-import { arrayMove } from '@dnd-kit/sortable'
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
+import { } from '@dnd-kit/sortable'
 import { useState } from 'react'
 import { Column } from './Column'
 import { JobCard } from './JobCard'
@@ -52,7 +53,7 @@ export function Board({ jobs, onStatusChange, onAdd, onEdit, onDelete }: Props) 
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="flex gap-5 overflow-x-auto pb-6 board-scroll">
         {COLUMNS.map(col => (
           <Column
             key={col.status}

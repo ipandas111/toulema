@@ -20,10 +20,19 @@ export function useJobs() {
 
   useEffect(() => { fetchJobs() }, [fetchJobs])
 
+  const sanitize = (job: Partial<Omit<Job, 'id' | 'created_at' | 'updated_at'>>) => ({
+    ...job,
+    deadline: job.deadline || null,
+    city:     job.city     || null,
+    channel:  job.channel  || null,
+    jd_url:   job.jd_url   || null,
+    notes:    job.notes    || null,
+  })
+
   const addJob = async (job: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {
     const { data, error } = await supabase
       .from('jobs')
-      .insert([job])
+      .insert([sanitize(job)])
       .select()
       .single()
     if (error) throw error
@@ -34,7 +43,7 @@ export function useJobs() {
   const updateJob = async (id: string, updates: Partial<Job>) => {
     const { data, error } = await supabase
       .from('jobs')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...sanitize(updates), updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single()
