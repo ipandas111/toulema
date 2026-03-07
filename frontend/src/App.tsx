@@ -6,6 +6,7 @@ import { FilterBar } from './components/FilterBar'
 import type { Filters } from './components/FilterBar'
 import { DeadlineAlert } from './components/DeadlineAlert'
 import { Timeline } from './components/Timeline'
+import { AIAssistant } from './components/AIAssistant'
 import { useJobs } from './hooks/useJobs'
 import { useAuth } from './lib/auth'
 import { LoginPage } from './components/Login'
@@ -108,6 +109,7 @@ export default function App() {
       <Analytics jobs={jobs} />
       <Timeline jobs={jobs} />
       <DeadlineAlert jobs={jobs} onEdit={(job) => setModal({ open: true, job })} />
+      <AIAssistant />
       <main className="max-w-[1600px] mx-auto px-6 py-5">
         {loading && <LoadingSkeleton />}
         {error && <div className="bg-red/10 border border-red/30 text-red rounded-lg px-4 py-3 text-sm mb-4">数据加载失败：{error}</div>}
