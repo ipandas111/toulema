@@ -37,7 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
+    // 自动确认，无需邮箱验证
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: undefined }
+    })
     return { error: error as Error | null }
   }
 
