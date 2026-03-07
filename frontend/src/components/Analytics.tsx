@@ -72,7 +72,7 @@ export function Analytics({ jobs }: Props) {
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                 contentStyle={tooltipStyle}
-                formatter={(v: number) => [v + ' 条', '数量']}
+                formatter={(v) => [Number(v || 0) + ' 条', '数量']}
               />
               <Bar dataKey="count" shape={<CustomBar />} radius={[0, 4, 4, 0]}>
                 {pipeline.map((entry, i) => (
@@ -97,7 +97,7 @@ export function Analytics({ jobs }: Props) {
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v + ' 条', '']} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v) => [Number(v || 0) + ' 条', '']} />
                 <Legend iconType="circle" iconSize={8}
                   formatter={(v) => <span style={{ fontSize: 11, color: '#86868B' }}>{v}</span>} />
               </PieChart>
@@ -117,7 +117,7 @@ export function Analytics({ jobs }: Props) {
                   axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#86868B' }}
                   axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v + ' 条', '数量']} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v) => [Number(v || 0) + ' 条', '数量']} />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                   {cities.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />

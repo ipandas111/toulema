@@ -80,7 +80,7 @@ export function Timeline({ jobs }: Props) {
               axisLine={false} tickLine={false} />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(v: number) => [v + ' 条', '投递数']}
+              formatter={(v) => [Number(v || 0) + ' 条', '投递数']}
               labelFormatter={(l) => `${l} 周`}
             />
             <Area
