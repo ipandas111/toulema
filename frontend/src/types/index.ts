@@ -9,6 +9,7 @@ export type JobStatus =
 
 export interface Job {
   id: string
+  user_id: string
   company: string
   position: string
   status: JobStatus

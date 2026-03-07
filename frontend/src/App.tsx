@@ -7,11 +7,14 @@ import type { Filters } from './components/FilterBar'
 import { DeadlineAlert } from './components/DeadlineAlert'
 import { Timeline } from './components/Timeline'
 import { useJobs } from './hooks/useJobs'
+import { useAuth } from './lib/auth'
+import { LoginPage } from './components/Login'
 import { categorize } from './utils/categorize'
 import type { Job, JobStatus } from './types'
 
 export default function App() {
-  const { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob } = useJobs()
+  const { user, loading: authLoading, signOut } = useAuth()
+  const { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob } = useJobs(user)
   const [modal, setModal] = useState<{ open: boolean; job?: Job | null; defaultStatus?: JobStatus }>({ open: false })
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<Filters>({ industry: null, status: null })
@@ -30,9 +33,21 @@ export default function App() {
     rejected: jobs.filter(j => j.status === '已拒绝').length,
   }), [jobs])
 
-  const handleSave = async (data: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleSave = async (data: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (modal.job) await updateJob(modal.job.id, data)
     else await addJob(data)
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center">
+        <div className="text-[15px] text-[#86868B]">加载中...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <LoginPage />
   }
 
   return (
@@ -55,7 +70,11 @@ export default function App() {
             />
           </div>
 
-          <button onClick={() => setModal({ open: true })} className="ml-auto flex items-center gap-1 bg-amber
+          <button onClick={() => signOut()} className="text-[13px] text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0">
+            退出登录
+          </button>
+
+          <button onClick={() => setModal({ open: true })} className="flex items-center gap-1 bg-amber
             text-black font-semibold px-4 py-1.5 rounded-lg text-[13px] transition-opacity
             hover:opacity-85 active:opacity-70 flex-shrink-0">
             <span className="text-[15px] leading-none">+</span>

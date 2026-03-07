@@ -5,6 +5,7 @@ import type { Job } from '../types'
 // ── helpers ─────────────────────────────────────────────────────────────────
 const makeJob = (overrides: Partial<Job> = {}): Job => ({
   id: crypto.randomUUID(),
+  user_id: 'test-user-id',
   company: '德州仪器',
   position: 'TSE',
   status: '已投递',

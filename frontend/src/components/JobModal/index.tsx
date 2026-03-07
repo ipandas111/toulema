@@ -6,11 +6,11 @@ interface Props {
   open: boolean
   job?: Job | null
   defaultStatus?: JobStatus
-  onSave: (data: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => void
+  onSave: (data: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void
   onClose: () => void
 }
 
-const empty = (): Omit<Job, 'id' | 'created_at' | 'updated_at'> => ({
+const empty = (): Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'> => ({
   company: '', position: '', status: '待投递',
   city: '', channel: '', deadline: '', priority: 2, notes: '', jd_url: '',
 })

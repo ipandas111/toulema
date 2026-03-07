@@ -3,6 +3,7 @@
 
 create table if not exists jobs (
   id          uuid primary key default gen_random_uuid(),
+  user_id     uuid references auth.users not null,
   company     text not null,
   position    text not null,
   status      text not null default '待投递'
@@ -27,7 +28,10 @@ create trigger jobs_updated_at
   before update on jobs
   for each row execute function update_updated_at();
 
--- Demo 阶段：开放访问（无需登录）
--- 上线后替换为 auth.uid() 用户隔离
+-- 用户数据隔离：只有自己可以查看/修改自己的数据
 alter table jobs enable row level security;
-create policy "demo_open" on jobs for all using (true) with check (true);
+
+-- 用户只能看到自己的投递记录
+create policy "users_own_jobs" on jobs for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
