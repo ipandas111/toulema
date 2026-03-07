@@ -14,7 +14,7 @@ import type { Job, JobStatus } from './types'
 
 export default function App() {
   const { user, loading: authLoading, signOut } = useAuth()
-  const { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob } = useJobs(user)
+  const { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob } = useJobs(user?.id ?? null)
   const [modal, setModal] = useState<{ open: boolean; job?: Job | null; defaultStatus?: JobStatus }>({ open: false })
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<Filters>({ industry: null, status: null })

@@ -1,62 +1,64 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
 import type { Job, JobStatus } from '../types'
-import type { User } from '@supabase/supabase-js'
 
-export function useJobs(user: User | null) {
+const JOBS_KEY = 'toulema_jobs'
+
+function getStoredJobs(userId: string): Job[] {
+  const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
+  return allJobs[userId] || []
+}
+
+function saveJobs(userId: string, jobs: Job[]) {
+  const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
+  allJobs[userId] = jobs
+  localStorage.setItem(JOBS_KEY, JSON.stringify(allJobs))
+}
+
+export function useJobs(userId: string | null) {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const fetchJobs = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setJobs([])
       setLoading(false)
       return
     }
     setLoading(true)
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-    if (error) setError(error.message)
-    else setJobs(data as Job[])
+    try {
+      const data = getStoredJobs(userId)
+      setJobs(data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()))
+    } catch (e) {
+      setError('加载数据失败')
+    }
     setLoading(false)
-  }, [user?.id])
+  }, [userId])
 
   useEffect(() => { fetchJobs() }, [fetchJobs])
 
-  const sanitize = (job: Partial<Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) => ({
-    ...job,
-    deadline: job.deadline || null,
-    city:     job.city     || null,
-    channel:  job.channel  || null,
-    jd_url:   job.jd_url   || null,
-    notes:    job.notes    || null,
-  })
-
   const addJob = async (job: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    if (!user) throw new Error('Must be logged in')
-    const { data, error } = await supabase
-      .from('jobs')
-      .insert([{ ...sanitize(job), user_id: user.id }])
-      .select()
-      .single()
-    if (error) throw error
-    setJobs(prev => [data as Job, ...prev])
-    return data as Job
+    if (!userId) throw new Error('Must be logged in')
+    const newJob: Job = {
+      ...job,
+      id: crypto.randomUUID(),
+      user_id: userId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    const updated = [newJob, ...jobs]
+    saveJobs(userId, updated)
+    setJobs(updated)
+    return newJob
   }
 
   const updateJob = async (id: string, updates: Partial<Job>) => {
-    const { data, error } = await supabase
-      .from('jobs')
-      .update({ ...sanitize(updates), updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single()
-    if (error) throw error
-    setJobs(prev => prev.map(j => j.id === id ? data as Job : j))
+    if (!userId) return
+    const updated = jobs.map(j =>
+      j.id === id ? { ...j, ...updates, updated_at: new Date().toISOString() } : j
+    )
+    saveJobs(userId, updated)
+    setJobs(updated)
   }
 
   const updateStatus = async (id: string, status: JobStatus) => {
@@ -64,9 +66,10 @@ export function useJobs(user: User | null) {
   }
 
   const deleteJob = async (id: string) => {
-    const { error } = await supabase.from('jobs').delete().eq('id', id)
-    if (error) throw error
-    setJobs(prev => prev.filter(j => j.id !== id))
+    if (!userId) return
+    const updated = jobs.filter(j => j.id !== id)
+    saveJobs(userId, updated)
+    setJobs(updated)
   }
 
   return { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob, refetch: fetchJobs }
