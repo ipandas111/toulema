@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { parseISO, format, startOfWeek, endOfWeek, eachDayOfInterval, subMonths, isSameDay, isSameMonth } from 'date-fns'
+import { parseISO, format, startOfWeek, endOfWeek, eachDayOfInterval, subMonths } from 'date-fns'
 import { zhCN } from 'date-fns/locale/zh-CN'
 import type { Job } from '../types'
 
@@ -111,7 +111,7 @@ export function CalendarHeatmap({ jobs }: Props) {
               }
             })
             return months
-          }, [weeks]).map((item, i, arr) => (
+          }, [weeks]).map((item, i) => (
             <span
               key={i}
               className="absolute"
