@@ -39,17 +39,22 @@ export function useJobs(userId: string | null) {
 
   const addJob = async (job: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!userId) throw new Error('Must be logged in')
-    const newJob: Job = {
-      ...job,
-      id: crypto.randomUUID(),
-      user_id: userId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    try {
+      const newJob: Job = {
+        ...job,
+        id: crypto.randomUUID(),
+        user_id: userId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      const updated = [newJob, ...jobs]
+      saveJobs(userId, updated)
+      setJobs(updated)
+      return newJob
+    } catch (e) {
+      console.error('Failed to add job:', e)
+      throw e
     }
-    const updated = [newJob, ...jobs]
-    saveJobs(userId, updated)
-    setJobs(updated)
-    return newJob
   }
 
   const updateJob = async (id: string, updates: Partial<Job>) => {

@@ -37,8 +37,13 @@ export default function App() {
   }), [jobs])
 
   const handleSave = async (data: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    if (modal.job) await updateJob(modal.job.id, data)
-    else await addJob(data)
+    try {
+      if (modal.job) await updateJob(modal.job.id, data)
+      else await addJob(data)
+    } catch (e) {
+      console.error('Save failed:', e)
+      alert('保存失败，请重试')
+    }
   }
 
   if (authLoading) {
