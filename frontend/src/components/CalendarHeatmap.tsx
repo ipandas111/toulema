@@ -33,7 +33,7 @@ export function CalendarHeatmap({ jobs }: Props) {
   }, [jobs])
 
   const getColor = (count: number) => {
-    if (count === 0) return 'bg-[#F0F0F2]'
+    if (count === 0 || !maxCount) return 'bg-[#F0F0F2]'
     const intensity = count / maxCount
     if (intensity <= 0.25) return 'bg-amber/30'
     if (intensity <= 0.5) return 'bg-amber/50'

@@ -4,14 +4,22 @@ import type { Job, JobStatus } from '../types'
 const JOBS_KEY = 'toulema_jobs'
 
 function getStoredJobs(userId: string): Job[] {
-  const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
-  return allJobs[userId] || []
+  try {
+    const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
+    return allJobs[userId] || []
+  } catch {
+    return []
+  }
 }
 
 function saveJobs(userId: string, jobs: Job[]) {
-  const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
-  allJobs[userId] = jobs
-  localStorage.setItem(JOBS_KEY, JSON.stringify(allJobs))
+  try {
+    const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
+    allJobs[userId] = jobs
+    localStorage.setItem(JOBS_KEY, JSON.stringify(allJobs))
+  } catch (e) {
+    console.error('Failed to save jobs:', e)
+  }
 }
 
 export function useJobs(userId: string | null) {
