@@ -6,6 +6,8 @@ import { FilterBar } from './components/FilterBar'
 import type { Filters } from './components/FilterBar'
 import { DeadlineAlert } from './components/DeadlineAlert'
 import { Timeline } from './components/Timeline'
+import { CalendarHeatmap } from './components/CalendarHeatmap'
+import { DataBackup } from './components/DataBackup'
 import { AIAssistant } from './components/AIAssistant'
 import { useJobs } from './hooks/useJobs'
 import { useAuth } from './lib/auth'
@@ -108,6 +110,8 @@ export default function App() {
 
       <Analytics jobs={jobs} />
       <Timeline jobs={jobs} />
+      <CalendarHeatmap jobs={jobs} />
+      <DataBackup userId={user?.id ?? null} jobs={jobs} />
       <DeadlineAlert jobs={jobs} onEdit={(job) => setModal({ open: true, job })} />
       <AIAssistant />
       <main className="max-w-[1600px] mx-auto px-6 py-5">

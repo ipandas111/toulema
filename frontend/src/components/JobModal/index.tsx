@@ -122,7 +122,7 @@ export function JobModal({ open, job, defaultStatus, onSave, onClose }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className={lbl}>截止日期</span>
+              <span className={lbl}>投递日期</span>
               <input type="date" value={form.deadline} onChange={set('deadline')} className={f} />
             </label>
             <label className="block">
