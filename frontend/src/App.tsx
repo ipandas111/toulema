@@ -115,7 +115,7 @@ export default function App() {
 
       <Analytics jobs={jobs} />
       <Timeline jobs={jobs} />
-      <CalendarHeatmap jobs={jobs} />
+      {jobs.length > 0 && <CalendarHeatmap jobs={jobs} />}
       <DataBackup userId={user?.id ?? null} jobs={jobs} />
       <DeadlineAlert jobs={jobs} onEdit={(job) => setModal({ open: true, job })} />
       <AIAssistant />
