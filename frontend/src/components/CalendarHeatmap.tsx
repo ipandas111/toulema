@@ -98,7 +98,7 @@ export function CalendarHeatmap({ jobs }: Props) {
         </div>
 
         {/* 月份标签 */}
-        <div className="flex mt-2 text-[10px] text-muted">
+        <div className="relative mt-2 h-4 text-[10px] text-muted">
           {useMemo(() => {
             const months: { month: string; weekIndex: number }[] = []
             let lastMonth = ''
