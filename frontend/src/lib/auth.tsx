@@ -19,12 +19,20 @@ const USERS_KEY = 'toulema_users'
 const CURRENT_USER_KEY = 'toulema_current_user'
 
 function getStoredUsers(): Record<string, { id: string; username: string; createdAt: string }> {
-  const stored = localStorage.getItem(USERS_KEY)
-  return stored ? JSON.parse(stored) : {}
+  try {
+    const stored = localStorage.getItem(USERS_KEY)
+    return stored ? JSON.parse(stored) : {}
+  } catch {
+    return {}
+  }
 }
 
 function saveUsers(users: Record<string, { id: string; username: string; createdAt: string }>) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users))
+  try {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users))
+  } catch (e) {
+    console.error('Failed to save users:', e)
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
