@@ -1,0 +1,54 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.venv
+venv/
+ENV/
+.eggs
+*.egg-info/
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov/
+
+# Docs
+*.md
+docs/
+
+# Node (if any)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+
+# Docker
+Dockerfile
+docker-compose*
+
+# Misc
+*.log
+.env.example
+tests/

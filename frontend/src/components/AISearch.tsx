@@ -10,14 +10,17 @@ interface SearchResult {
   url: string
   likes: number
   comments: number
+  is_ai_summary?: boolean
 }
 
-const PLATFORM_INFO = {
+const PLATFORM_INFO: Record<string, { name: string; icon: string; color: string }> = {
   xiaohongshu: { name: '小红书', icon: '📕', color: '#FF2442' },
   zhihu: { name: '知乎', icon: '🟦', color: '#0084FF' },
   niuke: { name: '牛客', icon: '🐂', color: '#EA4141' },
   liepin: { name: '猎聘', icon: '💼', color: '#3875F6' },
   boss: { name: 'BOSS', icon: '👔', color: '#007AFF' },
+  ai_summary: { name: 'AI摘要', icon: '🤖', color: '#FF9F0A' },
+  web: { name: '网页', icon: '🌐', color: '#86868B' },
 }
 
 export function AISearch() {
@@ -38,49 +41,31 @@ export function AISearch() {
     if (!query.trim()) return
     setLoading(true)
 
-    // 模拟多平台搜索结果
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/intel/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: query,
+          search_type: searchType,
+          max_results: 8
+        })
+      })
 
-    const mockResults: SearchResult[] = [
-      {
-        platform: 'xiaohongshu',
-        platformIcon: '📕',
-        title: `${query} 面经分享｜字节跳动后端四面经验`,
-        content: '本人211硕，秋招收获字节阿里offer，分享一下面试流程... 一面主要问了基础算法，二面项目深挖，三面架构设计...',
-        url: 'https://www.xiaohongshu.com/explore/xxx',
-        likes: 2341,
-        comments: 156,
-      },
-      {
-        platform: 'niuke',
-        platformIcon: '🐂',
-        title: `[${query}] 2024秋招高频面试题汇总`,
-        content: '整理了50+道高频面试题，涵盖八股文、手撕代码、系统设计...',
-        url: 'https://www.nowcoder.com/feed/main/detail/xxx',
-        likes: 5892,
-        comments: 423,
-      },
-      {
-        platform: 'zhihu',
-        platformIcon: '🟦',
-        title: `${query} 这个岗位真实工作体验怎么样？`,
-        content: '在字节干了两年的开发岗，说说真实感受... 优点：成长快、钱多；缺点：卷是真的卷...',
-        url: 'https://www.zhihu.com/question/xxx',
-        likes: 4521,
-        comments: 892,
-      },
-      {
-        platform: 'boss',
-        platformIcon: '👔',
-        title: `${query} 薪资涨幅与晋升路径分析`,
-        content: '3年从P5到P7，薪资翻了2倍，分享一些心得...',
-        url: 'https://www.zhipin.com/feed/detail/xxx',
-        likes: 1876,
-        comments: 234,
-      },
-    ]
+      if (!response.ok) {
+        throw new Error('Search failed')
+      }
 
-    setResults(mockResults)
+      const data = await response.json()
+      setResults(data.results || [])
+    } catch (error) {
+      console.error('Search error:', error)
+      setResults([])
+    }
+
     setLoading(false)
     setIsOpen(true)
   }
@@ -172,12 +157,13 @@ export function AISearch() {
             ) : (
               <div className="divide-y divide-border">
                 {results.map((result, i) => {
-                  const platform = PLATFORM_INFO[result.platform as keyof typeof PLATFORM_INFO]
+                  const platform = PLATFORM_INFO[result.platform as keyof typeof PLATFORM_INFO] || PLATFORM_INFO.web
+                  const hasUrl = result.url && result.url.length > 0
                   return (
                     <div
                       key={i}
-                      className="p-4 hover:bg-[#F5F5F7] cursor-pointer transition-colors"
-                      onClick={() => window.open(result.url, '_blank')}
+                      className={`p-4 transition-colors ${hasUrl ? 'hover:bg-[#F5F5F7] cursor-pointer' : ''}`}
+                      onClick={() => hasUrl && window.open(result.url, '_blank')}
                     >
                       <div className="flex items-start gap-2">
                         <span className="text-lg flex-shrink-0">{result.platformIcon}</span>
@@ -193,13 +179,15 @@ export function AISearch() {
                               {result.title}
                             </span>
                           </div>
-                          <p className="text-xs text-[#86868B] line-clamp-2 mb-2">
+                          <p className="text-xs text-[#86868B] line-clamp-3 mb-2">
                             {result.content}
                           </p>
-                          <div className="flex items-center gap-3 text-[10px] text-[#AEAEB2]">
-                            <span>❤️ {result.likes}</span>
-                            <span>💬 {result.comments}</span>
-                          </div>
+                          {hasUrl && (
+                            <div className="flex items-center gap-3 text-[10px] text-[#AEAEB2]">
+                              <span>❤️ {result.likes}</span>
+                              <span>💬 {result.comments}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
