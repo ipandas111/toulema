@@ -41,48 +41,52 @@ export function JobCard({ job, accentColor, onEdit, onDelete }: Props) {
       {...listeners}
       className={[
         'job-card relative rounded-xl p-3 cursor-grab active:cursor-grabbing group select-none',
-        'border',
-        isDragging ? 'opacity-30 scale-95' : '',
+        isDragging ? 'dragging' : '',
         deadlineWarning === 'expired'
-          ? 'bg-card border-red/20 opacity-50'
-          : deadlineWarning === 'urgent'
-          ? 'bg-card border-amber/40'
-          : 'bg-card border-border hover:border-border',
+          ? 'opacity-50'
+          : '',
       ].join(' ')}
     >
+      {/* Card background with subtle shadow */}
+      <div className="absolute inset-0 rounded-xl bg-white"
+        style={{
+          boxShadow: isDragging ? 'var(--shadow-xl)' : 'var(--shadow-sm)',
+          border: '1px solid var(--color-border)'
+        }} />
+
       {/* Accent bar */}
       <div
-        className="absolute left-0 top-[14%] bottom-[14%] w-[2.5px] rounded-r-sm"
+        className="absolute left-0 top-[15%] bottom-[15%] w-[3px] rounded-r"
         style={{ background: accentColor }}
       />
 
-      <div className="pl-3">
+      <div className="relative pl-3">
         {/* Company row */}
         <div className="flex items-start justify-between gap-1 mb-0.5">
-          <span className="text-[13px] font-semibold text-[#1D1D1F] truncate leading-snug">
+          <span className="text-sm font-semibold text-[#1D1D1F] truncate leading-snug">
             {job.company}
           </span>
           {/* Action buttons — visible on hover */}
-          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-all">
             <button
               onPointerDown={e => e.stopPropagation()}
               onClick={e => { e.stopPropagation(); onEdit(job) }}
-              className="w-5 h-5 flex items-center justify-center rounded text-muted
-                         hover:text-[#1D1D1F] hover:bg-black/10 transition-colors text-[10px]"
+              className="w-6 h-6 flex items-center justify-center rounded-md text-[#86868B]
+                         hover:text-[#1D1D1F] hover:bg-black/5 transition-colors"
               title="编辑"
             >
-              <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3" stroke="currentColor" strokeWidth={1.5}>
+              <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth={1.5}>
                 <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/>
               </svg>
             </button>
             <button
               onPointerDown={e => e.stopPropagation()}
               onClick={e => { e.stopPropagation(); onDelete(job.id) }}
-              className="w-5 h-5 flex items-center justify-center rounded text-muted/60
-                         hover:text-red hover:bg-red/10 transition-colors"
+              className="w-6 h-6 flex items-center justify-center rounded-md text-[#86868B]
+                         hover:text-red-500 hover:bg-red-50 transition-colors"
               title="删除"
             >
-              <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3" stroke="currentColor" strokeWidth={1.5}>
+              <svg viewBox="0 0 16 16" fill="none" className="w-3.5 h-3.5" stroke="currentColor" strokeWidth={1.5}>
                 <path d="M3 4h10M6 4V2h4v2M5 4v9h6V4"/>
               </svg>
             </button>
@@ -90,22 +94,22 @@ export function JobCard({ job, accentColor, onEdit, onDelete }: Props) {
         </div>
 
         {/* Position */}
-        <div className="text-[11.5px] text-muted leading-snug mb-2.5 truncate">{job.position}</div>
+        <div className="text-xs text-[#86868B] leading-snug mb-3 truncate">{job.position}</div>
 
         {/* Footer */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <span
-            className="text-[10px] px-1.5 py-[2px] rounded-md font-medium tracking-tight"
-            style={{ background: industryColor + '18', color: industryColor }}
+            className="text-[10px] px-2 py-1 rounded-md font-medium"
+            style={{ background: industryColor + '15', color: industryColor }}
           >
             {industry}
           </span>
           {job.deadline && (
             <span className={[
               'text-[10px] font-mono ml-auto',
-              deadlineWarning === 'expired' ? 'text-red/60' :
-              deadlineWarning === 'urgent'  ? 'text-amber' :
-              'text-muted/50',
+              deadlineWarning === 'expired' ? 'text-red-500/60' :
+              deadlineWarning === 'urgent'  ? 'text-amber-500' :
+              'text-[#AEAEB2]',
             ].join(' ')}>
               {deadlineWarning === 'expired'
                 ? '已截止'

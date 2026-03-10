@@ -15,7 +15,8 @@ export interface Job {
   status: JobStatus
   city?: string
   channel?: string
-  deadline?: string
+  deadline?: string      // 截止日期
+  applied_at?: string     // 投递日期
   priority: 1 | 2 | 3
   notes?: string
   jd_url?: string

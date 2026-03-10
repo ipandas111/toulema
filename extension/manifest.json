@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "投了吗 - 求职投递助手",
+  "version": "1.0.0",
+  "description": "一键记录求职投递，自动同步到投了吗网站",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

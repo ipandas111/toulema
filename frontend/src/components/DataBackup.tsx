@@ -3,17 +3,26 @@ import type { Job } from '../types'
 
 const JOBS_KEY = 'toulema_jobs'
 
+// 获取本地用户 ID
+function getLocalUserId(): string {
+  const STORAGE_KEY = 'toulema_local_user'
+  let userId = localStorage.getItem(STORAGE_KEY)
+  if (!userId) {
+    userId = crypto.randomUUID()
+    localStorage.setItem(STORAGE_KEY, userId)
+  }
+  return userId
+}
+
 interface Props {
-  userId: string | null
   jobs: Job[]
 }
 
-export function DataBackup({ userId, jobs }: Props) {
+export function DataBackup({ jobs }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const userId = getLocalUserId()
 
   const handleExport = () => {
-    if (!userId) return
-
     const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
     const userJobs = allJobs[userId] || []
 
@@ -34,7 +43,7 @@ export function DataBackup({ userId, jobs }: Props) {
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !userId) return
+    if (!file) return
 
     const reader = new FileReader()
     reader.onload = (event) => {
@@ -65,8 +74,6 @@ export function DataBackup({ userId, jobs }: Props) {
     reader.readAsText(file)
     e.target.value = ''
   }
-
-  if (!userId) return null
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 pb-4">
