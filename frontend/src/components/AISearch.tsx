@@ -43,7 +43,7 @@ export function AISearch() {
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || ''
-      const response = await fetch(`${apiUrl}/api/intel/search`, {
+      const response = await fetch(`${apiUrl}/api/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
