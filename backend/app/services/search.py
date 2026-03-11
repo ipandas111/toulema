@@ -11,8 +11,9 @@ class SearchService:
     def __init__(self):
         api_key = settings.tavily_api_key
         if not api_key:
-            raise ValueError("TAVILY_API_KEY not set")
-        self.client = TavilyClient(api_key=api_key)
+            self.client = None
+        else:
+            self.client = TavilyClient(api_key=api_key)
 
     def search(
         self,
@@ -23,6 +24,18 @@ class SearchService:
         """
         执行搜索并返回结构化结果
         """
+        if not self.client:
+            return [{
+                "platform": "ai_summary",
+                "platformIcon": "⚠️",
+                "title": "服务未配置",
+                "content": "请在环境变量中配置 TAVILY_API_KEY",
+                "url": "",
+                "likes": 0,
+                "comments": 0,
+                "is_ai_summary": True
+            }]
+
         # 根据搜索类型构建查询
         enhanced_query = self._build_query(query, search_type)
 

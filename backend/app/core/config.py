@@ -3,21 +3,21 @@ from typing import List
 
 
 class Settings(BaseSettings):
-    # LLM
-    anthropic_api_key: str
+    # LLM (可选)
+    anthropic_api_key: str = ""
     claude_haiku_model: str = "claude-haiku-4-5-20251001"
     claude_sonnet_model: str = "claude-sonnet-4-6"
 
-    # Search
-    tavily_api_key: str
+    # Search (Tavily)
+    tavily_api_key: str = ""
 
-    # Database
-    database_url: str
+    # Database (可选)
+    database_url: str = ""
 
-    # Redis / Celery
+    # Redis / Celery (可选)
     redis_url: str = "redis://localhost:6379/0"
 
-    # Vector DB
+    # Vector DB (可选)
     chroma_persist_dir: str = "./chroma_data"
 
     # Quality scoring thresholds
