@@ -1,8 +1,14 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any
+import json
+
+# Vercel handler - 必须是顶层函数
+def handler(request):
+    """Vercel Python Serverless Handler"""
+    return app(request)
 
 app = FastAPI()
 
@@ -121,26 +127,45 @@ def search_with_tavily(query: str, search_type: str = "general", max_results: in
         }]
 
 
-@app.post("/api/search")
-async def search(request: SearchRequest):
-    results = search_with_tavily(
-        query=request.query,
-        search_type=request.search_type,
-        max_results=request.max_results
-    )
-    return {"results": results, "query": request.query, "search_type": request.search_type}
+# Vercel 路由处理
+@app.api_route("/api/search", methods=["GET", "POST"])
+async def search(request):
+    """Vercel 兼容的 handler"""
+    # 解析请求
+    if request.method == "GET":
+        from urllib.parse import parse_qs
+        query_params = parse_qs(request.url.query)
+        query = query_params.get("q", [""])[0]
+        search_type = query_params.get("search_type", ["general"])[0]
+        max_results = int(query_params.get("max_results", ["8"])[0])
+    else:
+        # POST - 尝试解析 JSON
+        try:
+            body = await request.body()
+            data = json.loads(body) if body else {}
+            query = data.get("query", "")
+            search_type = data.get("search_type", "general")
+            max_results = data.get("max_results", 8)
+        except:
+            query = ""
+            search_type = "general"
+            max_results = 8
 
+    if not query:
+        result = {"results": [], "query": "", "search_type": search_type}
+    else:
+        results = search_with_tavily(
+            query=query,
+            search_type=search_type,
+            max_results=max_results
+        )
+        result = {"results": results, "query": query, "search_type": search_type}
 
-@app.get("/api/search")
-async def search_get(q: str = "", search_type: str = "general", max_results: int = 8):
-    if not q:
-        return {"results": [], "query": "", "search_type": search_type}
-    results = search_with_tavily(
-        query=q,
-        search_type=search_type,
-        max_results=max_results
+    # 返回 JSON 响应
+    return Response(
+        content=json.dumps(result, ensure_ascii=False),
+        media_type="application/json"
     )
-    return {"results": results, "query": q, "search_type": search_type}
 
 
 @app.get("/health")

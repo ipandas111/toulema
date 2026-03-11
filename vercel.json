@@ -3,9 +3,26 @@
   "outputDirectory": "frontend/dist",
   "framework": "vite",
   "installCommand": "pip install --break-system-packages -r requirements.txt",
-  "functions": {
-    "api/**/*.py": {
-      "runtime": "python3.9"
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/$1"
     }
+  ],
+  "functions": {
+    "api/search.py": {
+      "runtime": "python3.11",
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "TAVILY_API_KEY": "@tavily_api_key"
   }
 }
