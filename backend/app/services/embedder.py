@@ -1,3 +1,0 @@
-"""
-embedder.py — TODO: implement
-"""
