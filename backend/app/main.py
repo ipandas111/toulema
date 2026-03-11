@@ -25,3 +25,10 @@ app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 @app.get("/health")
 def health_check():
     return {"status": "ok", "version": "2.0.0"}
+
+
+# Vercel serverless handler
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+
+handler = app  # For Vercel
