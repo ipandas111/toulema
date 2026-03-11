@@ -1,8 +1,8 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any
-import os
 
 app = FastAPI()
 
@@ -19,17 +19,6 @@ class SearchRequest(BaseModel):
     query: str
     search_type: str = "general"
     max_results: int = 8
-
-
-class SearchResult(BaseModel):
-    platform: str
-    platformIcon: str
-    title: str
-    content: str
-    url: str
-    likes: int
-    comments: int
-    is_ai_summary: bool = False
 
 
 # Tavily search
@@ -142,10 +131,18 @@ async def search(request: SearchRequest):
     return {"results": results, "query": request.query, "search_type": request.search_type}
 
 
+@app.get("/api/search")
+async def search_get(q: str = "", search_type: str = "general", max_results: int = 8):
+    if not q:
+        return {"results": [], "query": "", "search_type": search_type}
+    results = search_with_tavily(
+        query=q,
+        search_type=search_type,
+        max_results=max_results
+    )
+    return {"results": results, "query": q, "search_type": search_type}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
-
-# Vercel handler
-handler = app
