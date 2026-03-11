@@ -132,7 +132,7 @@ def search_with_tavily(query: str, search_type: str = "general", max_results: in
         }]
 
 
-@app.post("/api/intel/search")
+@app.post("/api/search")
 async def search(request: SearchRequest):
     results = search_with_tavily(
         query=request.query,
