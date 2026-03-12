@@ -1,109 +1,118 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { supabase } from './supabase'
+import type { User } from '@supabase/supabase-js'
 
-interface User {
+interface AuthUser {
   id: string
-  username: string
+  email: string
 }
 
 interface AuthContextType {
-  user: User | null
+  user: AuthUser | null
   loading: boolean
-  signUp: (username: string) => User
-  signIn: (username: string) => User
-  signOut: () => void
+  signUp: (email: string, password: string) => Promise<{ error: string | null; success: boolean }>
+  signIn: (email: string, password: string) => Promise<{ error: string | null; success: boolean }>
+  signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-const USERS_KEY = 'toulema_users'
-const CURRENT_USER_KEY = 'toulema_current_user'
+// 本地匿名用户 ID 存储
+const ANONYMOUS_USER_KEY = 'toulema_anonymous_user'
 
-function getStoredUsers(): Record<string, { id: string; username: string; createdAt: string }> {
-  try {
-    const stored = localStorage.getItem(USERS_KEY)
-    return stored ? JSON.parse(stored) : {}
-  } catch {
-    return {}
+function getAnonymousUserId(): string {
+  let userId = localStorage.getItem(ANONYMOUS_USER_KEY)
+  if (!userId) {
+    userId = crypto.randomUUID()
+    localStorage.setItem(ANONYMOUS_USER_KEY, userId)
   }
-}
-
-function saveUsers(users: Record<string, { id: string; username: string; createdAt: string }>) {
-  try {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users))
-  } catch (e) {
-    console.error('Failed to save users:', e)
-  }
+  return userId
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const stored = localStorage.getItem(CURRENT_USER_KEY)
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored))
-      } catch {
-        localStorage.removeItem(CURRENT_USER_KEY)
+    // 检查当前登录状态
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || ''
+        })
       }
-    }
-    setLoading(false)
+      setLoading(false)
+    })
+
+    // 监听登录状态变化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || ''
+        })
+      } else {
+        setUser(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const signUp = (username: string): User => {
-    const trimmed = username.trim()
-    if (!trimmed || trimmed.length < 2) {
-      throw new Error('用户名至少2个字符')
-    }
+  const signUp = async (email: string, password: string) => {
+    try {
+      const { error, data } = await supabase.auth.signUp({
+        email,
+        password,
+      })
 
-    const users = getStoredUsers()
-    const existing = Object.values(users).find(
-      u => u.username.toLowerCase() === trimmed.toLowerCase()
-    )
-    if (existing) {
-      throw new Error('用户名已存在')
-    }
+      if (error) {
+        return { error: error.message, success: false }
+      }
 
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      username: trimmed
-    }
+      // 注册成功后自动登录
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          email: email
+        })
+        return { error: null, success: true }
+      }
 
-    users[newUser.id] = {
-      id: newUser.id,
-      username: trimmed,
-      createdAt: new Date().toISOString()
+      return { error: '注册失败', success: false }
+    } catch (e) {
+      return { error: '网络错误', success: false }
     }
-    saveUsers(users)
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser))
-    setUser(newUser)
-    return newUser
   }
 
-  const signIn = (username: string): User => {
-    const trimmed = username.trim()
-    if (!trimmed || trimmed.length < 2) {
-      throw new Error('用户名至少2个字符')
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error, data } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        return { error: error.message, success: false }
+      }
+
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          email: email
+        })
+        return { error: null, success: true }
+      }
+
+      return { error: '登录失败', success: false }
+    } catch (e) {
+      return { error: '网络错误', success: false }
     }
-
-    const users = getStoredUsers()
-    const found = Object.values(users).find(
-      u => u.username.toLowerCase() === trimmed.toLowerCase()
-    )
-
-    if (!found) {
-      throw new Error('用户不存在，请先注册')
-    }
-
-    const user: User = { id: found.id, username: found.username }
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user))
-    setUser(user)
-    return user
   }
 
-  const signOut = () => {
-    localStorage.removeItem(CURRENT_USER_KEY)
+  const signOut = async () => {
+    await supabase.auth.signOut()
     setUser(null)
   }
 
@@ -120,13 +129,18 @@ export function useAuth() {
   return ctx
 }
 
-export function getCurrentUserId(): string | null {
-  const stored = localStorage.getItem(CURRENT_USER_KEY)
-  if (!stored) return null
-  try {
-    const user = JSON.parse(stored)
-    return user.id
-  } catch {
-    return null
+// 获取用户 ID（登录用户或匿名用户）
+export function getUserId(): string {
+  // 这里会从 AuthContext 获取真实的 user ID
+  // 如果未登录，使用匿名 ID
+  const stored = localStorage.getItem('toulema_current_auth_user')
+  if (stored) {
+    try {
+      const user = JSON.parse(stored)
+      return user.id
+    } catch {
+      return getAnonymousUserId()
+    }
   }
+  return getAnonymousUserId()
 }
