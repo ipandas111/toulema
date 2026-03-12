@@ -7,7 +7,7 @@ import type { Filters } from './components/FilterBar'
 import { DeadlineAlert } from './components/DeadlineAlert'
 import { CalendarHeatmap } from './components/CalendarHeatmap'
 import { AISearch } from './components/AISearch'
-import { useJobs } from './hooks/useJobs'
+import { useJobsWithSync } from './hooks/useJobsWithSync'
 import { categorize } from './utils/categorize'
 import type { Job, JobStatus } from './types'
 
@@ -46,7 +46,7 @@ function handleExport(userId: string) {
 
 export default function App() {
   const userId = getLocalUserId()
-  const { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob, refetch } = useJobs(userId)
+  const { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob, refetch } = useJobsWithSync(userId)
   const [modal, setModal] = useState<{ open: boolean; job?: Job | null; defaultStatus?: JobStatus }>({ open: false })
   const [filters, setFilters] = useState<Filters>({ industry: null, status: null })
   const importFileRef = useRef<HTMLInputElement>(null)
