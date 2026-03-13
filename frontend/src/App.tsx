@@ -10,17 +10,8 @@ import { AISearch } from './components/AISearch'
 import { useJobsWithSync } from './hooks/useJobsWithSync'
 import { categorize } from './utils/categorize'
 import type { Job, JobStatus } from './types'
-
-// 获取本地用户 ID
-function getLocalUserId(): string {
-  const STORAGE_KEY = 'toulema_local_user'
-  let userId = localStorage.getItem(STORAGE_KEY)
-  if (!userId) {
-    userId = crypto.randomUUID()
-    localStorage.setItem(STORAGE_KEY, userId)
-  }
-  return userId
-}
+import { AuthProvider, useAuth } from './lib/auth'
+import { LoginPage } from './components/LoginPage'
 
 // 数据备份相关
 const JOBS_KEY = 'toulema_jobs'
@@ -44,9 +35,11 @@ function handleExport(userId: string) {
   URL.revokeObjectURL(url)
 }
 
-export default function App() {
-  const userId = getLocalUserId()
-  const { jobs, loading, error, addJob, updateJob, updateStatus, deleteJob, refetch } = useJobsWithSync(userId)
+// 主应用组件
+function MainApp() {
+  const { user, loading: authLoading, signOut } = useAuth()
+  const userId = user?.id || null
+  const { jobs, loading: jobsLoading, error, addJob, updateJob, updateStatus, deleteJob, refetch } = useJobsWithSync(userId)
   const [modal, setModal] = useState<{ open: boolean; job?: Job | null; defaultStatus?: JobStatus }>({ open: false })
   const [filters, setFilters] = useState<Filters>({ industry: null, status: null })
   const importFileRef = useRef<HTMLInputElement>(null)
@@ -64,13 +57,13 @@ export default function App() {
         if (Array.isArray(importedJobs) && importedJobs.length > 0) {
           // 合并数据
           const allJobs: Record<string, Job[]> = JSON.parse(localStorage.getItem(JOBS_KEY) || '{}')
-          const existingJobs = allJobs[userId] || []
+          const existingJobs = allJobs[userId!] || []
           const existingIds = new Set(existingJobs.map(j => j.id))
 
           const newJobs = importedJobs.filter((j: Job) => !existingIds.has(j.id))
           const merged = [...existingJobs, ...newJobs]
 
-          allJobs[userId] = merged
+          allJobs[userId!] = merged
           localStorage.setItem(JOBS_KEY, JSON.stringify(allJobs))
 
           // 清理 URL 参数
@@ -88,7 +81,7 @@ export default function App() {
   // 处理文件导入
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !userId) return
 
     const reader = new FileReader()
     reader.onload = (event) => {
@@ -142,6 +135,10 @@ export default function App() {
     }
   }
 
+  const handleSignOut = async () => {
+    await signOut()
+  }
+
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
       {/* Subtle grain texture */}
@@ -174,7 +171,10 @@ export default function App() {
 
           {/* Actions - 右侧 */}
           <div className="ml-auto flex items-center gap-4">
-            <button onClick={() => handleExport(userId)}
+            {user && (
+              <span className="text-xs text-[#86868B]">{user.email}</span>
+            )}
+            <button onClick={() => handleExport(userId!)}
               className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
               导出
             </button>
@@ -182,6 +182,11 @@ export default function App() {
             <button onClick={() => importFileRef.current?.click()}
               className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
               导入
+            </button>
+
+            <button onClick={handleSignOut}
+              className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
+              退出登录
             </button>
           </div>
           <input
@@ -221,14 +226,14 @@ export default function App() {
       <DeadlineAlert jobs={jobs} onEdit={(job) => setModal({ open: true, job })} />
 
       <main className="max-w-[1600px] mx-auto px-5 py-6">
-        {loading && <LoadingSkeleton />}
+        {jobsLoading && <LoadingSkeleton />}
         {error && (
           <div className="mb-4 px-4 py-3 rounded-lg text-sm"
             style={{ background: 'rgba(217, 48, 37, 0.1)', color: '#D93025', border: '1px solid rgba(217, 48, 37, 0.2)' }}>
             数据加载失败：{error}
           </div>
         )}
-        {!loading && (
+        {!jobsLoading && (
           <>
             <FilterBar jobs={jobs} filters={filters} onChange={setFilters} />
             {filtered.length === 0 && jobs.length > 0 ? (
@@ -253,6 +258,38 @@ export default function App() {
       <JobModal open={modal.open} job={modal.job} defaultStatus={modal.defaultStatus}
         onSave={handleSave} onClose={() => setModal({ open: false })} />
     </div>
+  )
+}
+
+// 根组件 - 处理认证状态
+function Root() {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#FF9F0A] border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm text-[#86868B]">加载中...</span>
+        </div>
+      </div>
+    )
+  }
+
+  // 未登录显示登录页面，登录后显示主应用
+  if (!user) {
+    return <LoginPage />
+  }
+
+  return <MainApp />
+}
+
+// 导出包装了 AuthProvider 的 App
+export default function App() {
+  return (
+    <AuthProvider>
+      <Root />
+    </AuthProvider>
   )
 }
 
