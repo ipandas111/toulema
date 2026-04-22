@@ -1,57 +1,46 @@
 import { useState } from 'react'
 
-type SearchType = 'experience' | 'jd' | 'growth' | 'company'
-
-interface SearchResult {
-  platform: string
-  platformIcon: string
-  title: string
-  content: string
-  url: string
-  likes: number
-  comments: number
-  is_ai_summary?: boolean
-}
-
-const PLATFORM_INFO: Record<string, { name: string; icon: string; color: string }> = {
-  xiaohongshu: { name: '小红书', icon: '📕', color: '#FF2442' },
-  zhihu: { name: '知乎', icon: '🟦', color: '#0084FF' },
-  niuke: { name: '牛客', icon: '🐂', color: '#EA4141' },
-  liepin: { name: '猎聘', icon: '💼', color: '#3875F6' },
-  boss: { name: 'BOSS', icon: '👔', color: '#007AFF' },
-  ai_summary: { name: 'AI摘要', icon: '🤖', color: '#FF9F0A' },
-  web: { name: '网页', icon: '🌐', color: '#86868B' },
+interface ChatResponse {
+  query: string
+  intent: string
+  intent_label: string
+  answer: string
+  sources: Array<{
+    company?: string
+    source?: string
+    title?: string
+    url?: string
+  }>
 }
 
 export function AISearch() {
   const [query, setQuery] = useState('')
-  const [searchType, setSearchType] = useState<SearchType>('experience')
+  const [searchType, setSearchType] = useState<'experience' | 'jd_analysis' | 'company_review'>('experience')
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<SearchResult[]>([])
+  const [chatResponse, setChatResponse] = useState<ChatResponse | null>(null)
+  const [error, setError] = useState('')
 
   const searchTypes = [
     { key: 'experience', label: '面经', placeholder: '搜索公司/岗位面经...' },
-    { key: 'jd', label: 'JD分析', placeholder: '分析岗位值不值得投...' },
-    { key: 'growth', label: '成长前景', placeholder: '了解岗位发展路径...' },
-    { key: 'company', label: '公司评价', placeholder: '搜索公司口碑...' },
+    { key: 'jd_analysis', label: 'JD分析', placeholder: '分析岗位值不值得投...' },
+    { key: 'company_review', label: '公司评价', placeholder: '搜索公司口碑...' },
   ]
 
   const handleSearch = async () => {
     if (!query.trim()) return
     setLoading(true)
+    setError('')
+    setIsOpen(true)
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || ''
-      const response = await fetch(`${apiUrl}/api/search`, {
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: query,
-          search_type: searchType,
-          max_results: 8
+          intent: searchType
         })
       })
 
@@ -60,14 +49,13 @@ export function AISearch() {
       }
 
       const data = await response.json()
-      setResults(data.results || [])
-    } catch (error) {
-      console.error('Search error:', error)
-      setResults([])
+      setChatResponse(data)
+    } catch (err) {
+      console.error('Search error:', err)
+      setError('搜索失败，请重试')
     }
 
     setLoading(false)
-    setIsOpen(true)
   }
 
   const currentType = searchTypes.find(t => t.key === searchType)!
@@ -76,10 +64,9 @@ export function AISearch() {
     <div className="relative flex-shrink-0">
       {/* 搜索框区域 */}
       <div className="flex items-center gap-1">
-        {/* 搜索类型切换 */}
         <select
           value={searchType}
-          onChange={e => setSearchType(e.target.value as SearchType)}
+          onChange={e => setSearchType(e.target.value as typeof searchType)}
           className="h-[34px] px-2 text-xs bg-[#F0F0F2] border-0 rounded-lg text-[#86868B] focus:outline-none cursor-pointer"
         >
           {searchTypes.map(t => (
@@ -87,7 +74,6 @@ export function AISearch() {
           ))}
         </select>
 
-        {/* 搜索输入框 */}
         <div className="relative">
           <input
             value={query}
@@ -106,7 +92,6 @@ export function AISearch() {
           </svg>
         </div>
 
-        {/* 搜索按钮 */}
         <button
           onClick={handleSearch}
           disabled={loading || !query.trim()}
@@ -129,79 +114,80 @@ export function AISearch() {
 
       {/* 搜索结果面板 */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-[480px] bg-white rounded-2xl shadow-xl border border-border overflow-hidden z-50">
+        <div className="absolute top-full right-0 mt-2 w-[520px] bg-white rounded-2xl shadow-xl border border-border overflow-hidden z-50"
+             style={{ maxHeight: '80vh' }}>
           {/* 面板头部 */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border sticky top-0 bg-white">
             <div className="flex items-center gap-2">
               <span className="text-base">🔍</span>
-              <span className="text-sm font-medium text-[#1D1D1F]">AI 搜索结果</span>
-              <span className="text-xs text-[#86868B]">「{query}」</span>
+              <span className="text-sm font-medium text-[#1D1D1F]">AI 回答</span>
+              {chatResponse && (
+                <span className="text-xs px-2 py-0.5 rounded bg-[#F0F0F2] text-[#86868B]">
+                  {chatResponse.intent_label}
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[#86868B] bg-[#F5F5F7] px-2 py-1 rounded">
-                来自小红书、知乎、牛客
-              </span>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-[#F5F5F7] text-[#86868B]"
-              >
-                ×
-              </button>
-            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-[#F5F5F5] text-[#86868B]"
+            >
+              ×
+            </button>
           </div>
 
-          {/* 结果列表 */}
-          <div className="max-h-[400px] overflow-y-auto">
-            {results.length === 0 ? (
-              <div className="p-8 text-center text-[#86868B] text-sm">暂无搜索结果</div>
-            ) : (
-              <div className="divide-y divide-border">
-                {results.map((result, i) => {
-                  const platform = PLATFORM_INFO[result.platform as keyof typeof PLATFORM_INFO] || PLATFORM_INFO.web
-                  const hasUrl = result.url && result.url.length > 0
-                  return (
-                    <div
-                      key={i}
-                      className={`p-4 transition-colors ${hasUrl ? 'hover:bg-[#F5F5F7] cursor-pointer' : ''}`}
-                      onClick={() => hasUrl && window.open(result.url, '_blank')}
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="text-lg flex-shrink-0">{result.platformIcon}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span
-                              className="text-[10px] px-1.5 py-0.5 rounded"
-                              style={{ background: platform?.color + '15', color: platform?.color }}
-                            >
-                              {platform?.name}
-                            </span>
-                            <span className="text-sm font-medium text-[#1D1D1F] truncate">
-                              {result.title}
-                            </span>
-                          </div>
-                          <p className="text-xs text-[#86868B] line-clamp-3 mb-2">
-                            {result.content}
-                          </p>
-                          {hasUrl && (
-                            <div className="flex items-center gap-3 text-[10px] text-[#AEAEB2]">
-                              <span>❤️ {result.likes}</span>
-                              <span>💬 {result.comments}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
+          {/* 内容区域 */}
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(80vh - 60px)' }}>
+            {loading && (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="w-8 h-8 border-2 border-[#FF9F0A] border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-[#86868B]">AI 分析中...</span>
               </div>
             )}
-          </div>
 
-          {/* 底部提示 */}
-          <div className="px-4 py-2 bg-[#F5F5F7] border-t border-border">
-            <p className="text-[10px] text-[#86868B] text-center">
-              搜索结果由 AI 整合自公开网络，仅供参考
-            </p>
+            {error && (
+              <div className="p-4 text-sm text-red-500">{error}</div>
+            )}
+
+            {!loading && !error && chatResponse && (
+              <div className="p-4">
+                {/* AI 回答 */}
+                <div className="prose prose-sm max-w-none"
+                     style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                  <div className="whitespace-pre-wrap text-[#1D1D1F]">
+                    {chatResponse.answer}
+                  </div>
+                </div>
+
+                {/* 来源信息 */}
+                {chatResponse.sources && chatResponse.sources.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="text-xs text-[#86868B] mb-2">参考来源：</div>
+                    <div className="flex flex-wrap gap-2">
+                      {chatResponse.sources.slice(0, 5).map((source, i) => (
+                        <span
+                          key={i}
+                          className="text-xs px-2 py-1 rounded"
+                          style={{ background: '#F5F5F7', color: '#86868B' }}
+                        >
+                          {source.company || source.title || '未知来源'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 底部提示 */}
+                <div className="mt-4 pt-2 text-[10px] text-[#AEAEB2] text-center">
+                  AI 回答基于公开面经数据，仅供参考
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && !chatResponse && (
+              <div className="p-8 text-center text-[#86868B] text-sm">
+                输入问题获取 AI 面经分析
+              </div>
+            )}
           </div>
         </div>
       )}

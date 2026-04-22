@@ -36,3 +36,13 @@ models/
 # Logs
 *.log
 celery_worker.log
+
+# Large data files
+data/raw/
+data/cleaned/
+
+# Temp files
+.vercel/
+supabase/.temp/
+scripts/demo_rag.py
+start_demo.sh

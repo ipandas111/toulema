@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../lib/auth'
 
 export function LoginPage() {
-  const { signUp, signIn } = useAuth()
+  const { signUp, signIn, continueAsGuest } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -104,7 +104,7 @@ export function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <button
               onClick={() => {
                 setIsLogin(!isLogin)
@@ -116,13 +116,24 @@ export function LoginPage() {
               {isLogin ? '没有账号？点击注册' : '已有账号？点击登录'}
             </button>
           </div>
-        </div>
 
-        {/* Guest mode */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-[#86868B]">
-            也可以不登录，继续使用本地模式
-          </p>
+          {/* Guest mode */}
+          <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--color-border)' }}>
+            <button
+              onClick={continueAsGuest}
+              className="w-full py-3 rounded-xl text-sm font-medium transition-all"
+              style={{
+                background: 'transparent',
+                color: '#86868B',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              跳过登录，直接使用
+            </button>
+            <p className="text-xs text-[#86868B] text-center mt-2">
+              数据仅保存在本地，换浏览器可能丢失
+            </p>
+          </div>
         </div>
       </div>
     </div>

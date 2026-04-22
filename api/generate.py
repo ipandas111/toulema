@@ -212,6 +212,7 @@ async def generate(request: Request):
     response = {
         "query": query,
         "intent": intent,
+        "intent_label": {"experience": "面经", "jd_analysis": "JD分析", "company_review": "公司评价", "chat": "闲聊", "other": "其他"}.get(intent, "其他"),
         "answer": result["text"],
         "sources": result.get("sources", []),
         "usage": result.get("usage", {})
@@ -425,6 +426,7 @@ async def generate_answer(
     return {
         "query": query,
         "intent": intent,
+        "intent_label": {"experience": "面经", "jd_analysis": "JD分析", "company_review": "公司评价", "chat": "闲聊", "other": "其他"}.get(intent, "其他"),
         "company": company,
         "position": position,
         "answer": result["text"],

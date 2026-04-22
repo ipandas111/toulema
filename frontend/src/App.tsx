@@ -37,9 +37,9 @@ function handleExport(userId: string) {
 
 // 主应用组件
 function MainApp() {
-  const { user, loading: authLoading, signOut } = useAuth()
+  const { user, signOut } = useAuth()
   const userId = user?.id || null
-  const { jobs, loading: jobsLoading, error, addJob, updateJob, updateStatus, deleteJob, refetch } = useJobsWithSync(userId)
+  const { jobs, loading: jobsLoading, error, addJob, updateJob, updateStatus, deleteJob, refetch } = useJobsWithSync(userId, user?.isAnonymous || false)
   const [modal, setModal] = useState<{ open: boolean; job?: Job | null; defaultStatus?: JobStatus }>({ open: false })
   const [filters, setFilters] = useState<Filters>({ industry: null, status: null })
   const importFileRef = useRef<HTMLInputElement>(null)
@@ -171,23 +171,32 @@ function MainApp() {
 
           {/* Actions - 右侧 */}
           <div className="ml-auto flex items-center gap-4">
-            {user && (
+            {user && !user.isAnonymous && (
               <span className="text-xs text-[#86868B]">{user.email}</span>
             )}
-            <button onClick={() => handleExport(userId!)}
-              className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
-              导出
-            </button>
-
-            <button onClick={() => importFileRef.current?.click()}
-              className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
-              导入
-            </button>
-
-            <button onClick={handleSignOut}
-              className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
-              退出登录
-            </button>
+            {user && user.isAnonymous && (
+              <span className="text-xs px-2 py-1 rounded" style={{ background: '#F0F0F2', color: '#86868B' }}>
+                本地模式
+              </span>
+            )}
+            {user && (
+              <>
+                <button onClick={() => handleExport(userId!)}
+                  className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
+                  导出
+                </button>
+                <button onClick={() => importFileRef.current?.click()}
+                  className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
+                  导入
+                </button>
+              </>
+            )}
+            {user && !user.isAnonymous && (
+              <button onClick={handleSignOut}
+                className="text-sm text-[#86868B] hover:text-[#1D1D1F] flex-shrink-0 transition-colors">
+                退出登录
+              </button>
+            )}
           </div>
           <input
             ref={importFileRef}

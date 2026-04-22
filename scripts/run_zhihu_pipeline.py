@@ -10,6 +10,7 @@ import sys
 import json
 import time
 import re
+import random
 import httpx
 import argparse
 from pathlib import Path
@@ -432,22 +433,27 @@ def get_embeddings_batch(texts: list[str], batch_size: int = 25) -> list[list[fl
                     "Authorization": f"Bearer {MINIMAX_API_KEY}",
                     "Content-Type": "application/json"
                 },
-                json={"model": "embo-01", "texts": batch},
+                json={"model": "embo-01", "texts": batch, "type": "db"},
                 timeout=60
             )
             resp.raise_for_status()
             result = resp.json()
 
-            for item in result.get("data", []):
-                emb = item.get("embedding", [])
-                all_embeddings.append(emb if len(emb) == 1024 else [0.0] * 1024)
+            vectors = result.get("vectors", [])
+            if vectors:
+                for emb in vectors:
+                    all_embeddings.append(emb if len(emb) == 1536 else [0.0] * 1536)
+            else:
+                for item in result.get("data", []):
+                    emb = item.get("embedding", [])
+                    all_embeddings.append(emb if len(emb) == 1536 else [0.0] * 1536)
 
             print(f"  Embedding 批次 {i//batch_size + 1}: {len(batch)} 条")
             time.sleep(0.5)
 
         except Exception as e:
             print(f"  Embedding 失败: {e}")
-            all_embeddings.extend([[0.0] * 1024] * len(batch))
+            all_embeddings.extend([[0.0] * 1536] * len(batch))
 
     return all_embeddings
 
@@ -480,7 +486,9 @@ def main():
         for company in args.companies:
             records = scrape_zhihu_via_search(company, args.max_per_company)
             all_records.extend(records)
-            time.sleep(1)
+            delay = random.uniform(5, 8)
+            print(f"  等待 {delay:.1f}s 后继续...")
+            time.sleep(delay)
 
         # 保存原始数据
         raw_file = DATA_RAW / "zhihu_all.jsonl"
@@ -497,6 +505,14 @@ def main():
             print(f"读取已有数据: {len(all_records)} 条")
 
     # ---- Phase 2: 清洗 ----
+    if args.skip_clean:
+        # 如果跳过清洗，尝试读取已有的 cleaned 数据
+        cleaned_file = DATA_CLEANED / "zhihu_all.jsonl"
+        if cleaned_file.exists():
+            with open(cleaned_file, "r", encoding="utf-8") as f:
+                all_records = [json.loads(line) for line in f]
+            print(f"读取已清洗数据: {len(all_records)} 条")
+
     if not args.skip_clean and all_records:
         print("\n" + "=" * 50)
         print("Phase 2: MiniMax 内容清洗")

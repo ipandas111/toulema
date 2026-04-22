@@ -14,6 +14,7 @@ create table if not exists jobs (
   priority    smallint default 2 check (priority in (1,2,3)),
   notes       text,
   jd_url      text,
+  applied_at  timestamptz,
   created_at  timestamptz default now(),
   updated_at  timestamptz default now()
 );
