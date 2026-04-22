@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-API 入口 - Vercel Python Serverless Function
-"""
+"""API 入口 - Vercel Python Serverless Function"""
 import os
 import json
 import httpx
@@ -12,11 +10,8 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env.local'))
 
 app = FastAPI()
 
-# API Keys
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 SERPAPI_KEY = os.getenv("SERPAPI_API_KEY")
-
-# Claude
 CLAUDE_MODEL = "claude-sonnet-4-20250514"
 
 SYSTEM_PROMPT = """你是一个专业的求职顾问，擅长基于搜索结果为用户提供结构化的面经分析报告。
@@ -37,11 +32,10 @@ SYSTEM_PROMPT = """你是一个专业的求职顾问，擅长基于搜索结果�
 
 ---
 来源：网络搜索整理
-```
+```"""
 
 
 def search_serpapi(query: str, company: str = "", position: str = "") -> list:
-    """SerpAPI 实时搜索"""
     if not SERPAPI_KEY:
         return []
     try:
@@ -52,13 +46,12 @@ def search_serpapi(query: str, company: str = "", position: str = "") -> list:
         )
         resp.raise_for_status()
         return [{"title": r.get("title", ""), "snippet": r.get("snippet", ""), "url": r.get("link", "")}
-               for r in resp.json().get("organic_results", [])[:10]]
+                for r in resp.json().get("organic_results", [])[:10]]
     except:
         return []
 
 
 def search_duckduckgo(query: str, company: str = "", position: str = "") -> list:
-    """DuckDuckGo 兜底搜索"""
     try:
         resp = httpx.get(
             "https://duckduckgo.com/html/",
@@ -76,7 +69,6 @@ def search_duckduckgo(query: str, company: str = "", position: str = "") -> list
 
 
 def call_claude(query: str, search_results: list, intent: str) -> dict:
-    """调用 Claude"""
     if not ANTHROPIC_API_KEY:
         return {"error": "ANTHROPIC_API_KEY not configured"}
 
@@ -118,7 +110,6 @@ def call_claude(query: str, search_results: list, intent: str) -> dict:
 
 
 def classify_intent(query: str) -> dict:
-    """意图分类"""
     import re
     q = query.lower()
     if any(kw in q for kw in ["你好", "在吗", "hi", "hello", "谢谢"]):
@@ -231,6 +222,6 @@ async def generate(request: Request):
         media_type="application/json")
 
 
-@app.get("/health")
+@app.get("/api/health")
 def health():
     return {"status": "ok", "service": "api", "mode": "realtime-search"}
