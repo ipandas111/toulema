@@ -4,10 +4,10 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-@app.get("/")
+@app.get("/api/test")
 async def test():
     return {"status": "ok", "message": "Python API working!"}
 
-@app.get("/health")
+@app.get("/api/health")
 async def health():
     return {"status": "ok"}
