@@ -6,17 +6,5 @@ python-dotenv==1.0.1
 # AI API
 anthropic>=0.18.0
 
-# Supabase
-supabase>=2.0.0
-
-# 向量数据库
-pgvector>=0.2.0
-
-# 爬虫（本地运行）
-playwright>=1.40.0
-
-# 搜索兜底
-serpapi>=0.1.0
-
 # 测试
 pytest>=8.0.0
