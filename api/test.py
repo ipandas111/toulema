@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-@app.get("/test")
+@app.get("/")
 async def test():
     return {"status": "ok", "message": "Python API working!"}
 
