@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""测试端点 - Minimal"""
+"""测试端点 - Vercel Python"""
 from fastapi import FastAPI
 
 app = FastAPI()
 
-@app.get("/api/test")
+@app.get("/test")
 async def test():
-    return {"status": "ok"}
+    return {"status": "ok", "message": "Python API working!"}
 
 @app.get("/health")
 async def health():
